@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -17,7 +17,8 @@ export class Account implements OnInit {
 
   constructor(
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -30,6 +31,7 @@ export class Account implements OnInit {
     }
   }
 
+  // Save token in browser local storage (also works in android)
   saveToken() {
     if (this.token.trim()) {
       if (isPlatformBrowser(this.platformId)) {
@@ -37,7 +39,12 @@ export class Account implements OnInit {
         alert('Token saved successfully!');
       }
     } else {
-      alert('Please enter a token');
+      this.token = '';
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.removeItem('startgg_token');
+      }
+      alert('Token information cleared.');
+      // alert('Please enter a token');
     }
   }
 
@@ -47,6 +54,7 @@ export class Account implements OnInit {
         success: false,
         message: 'Please enter a token first'
       };
+      this.cdr.markForCheck();
       return;
     }
 
@@ -59,13 +67,17 @@ export class Account implements OnInit {
         'Content-Type': 'application/json'
       });
 
-      // Test the token by making a simple GraphQL query to get the viewer
+      // Test the token by making a simple GraphQL query to get the current user
       const query = {
         query: `
           query {
-            viewer {
+            currentUser {
               id
               name
+              slug
+              player{
+                gamerTag
+              }
             }
           }
         `
@@ -79,10 +91,15 @@ export class Account implements OnInit {
         )
       );
 
-      if (response && response.data && response.data.viewer) {
+      //Debug
+      console.clear();
+
+      if (response && response.data && response.data.currentUser) {
+        //Debug
+        console.log(response.data);
         this.testResult = {
           success: true,
-          message: `Token is valid! Connected as: ${response.data.viewer.name || 'User'}`
+          message: `Token is valid! Connected as: ${response.data.currentUser.player.gamerTag || response.data.currentUser.slug || 'User'}`
         };
       } else if (response && response.errors) {
         this.testResult = {
@@ -102,6 +119,7 @@ export class Account implements OnInit {
       };
     } finally {
       this.isTesting = false;
+      this.cdr.markForCheck();
     }
   }
 }
