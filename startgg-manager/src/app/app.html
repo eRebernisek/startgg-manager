@@ -1,0 +1,26 @@
+<style>
+  :host {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
+  }
+
+  main {
+    flex: 1;
+    padding: 2rem 0;
+  }
+</style>
+
+<app-nav></app-nav>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  <div class="footer-content">
+    <p>&copy; 2024 StartGG Manager. All rights reserved.</p>
+  </div>
+</footer>

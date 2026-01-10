@@ -1,0 +1,30 @@
+<div class="account-container">
+  <h1>Account Settings</h1>
+  <form (ngSubmit)="saveToken()" class="token-form">
+    <div class="form-group">
+      <label for="token">Token</label>
+      <input
+        type="text"
+        id="token"
+        name="token"
+        [(ngModel)]="token"
+        placeholder="Enter your token"
+        class="token-input"
+      />
+    </div>
+    <p class="help-message">
+      Don't know how to get your token? Click  <a href="https://start.gg/admin/profile/developer" target="_blank" rel="noopener noreferrer">here</a> and go to 'Third Party Access Tokens' to get your token
+    </p>
+    <button type="submit" class="save-button">Save</button>
+  </form>
+  
+  <div class="test-section">
+    <h2>Test your token</h2>
+    <button type="button" class="test-button" (click)="testToken()" [disabled]="isTesting">
+      {{ isTesting ? 'Testing...' : 'Test Token' }}
+    </button>
+    <div *ngIf="testResult" class="test-result" [class.success]="testResult.success" [class.error]="!testResult.success">
+      {{ testResult.message }}
+    </div>
+  </div>
+</div>
