@@ -2,30 +2,47 @@
   <h1>Players</h1>
   <p class="subtitle">View player profiles and statistics</p>
   
-  <div class="player-list">
-    <div class="player-card">
-      <div class="player-avatar">JD</div>
-      <div class="player-info">
-        <h3>John Doe</h3>
-        <p>Rank: #1</p>
-        <p>Wins: 45 | Losses: 12</p>
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading tournaments and events...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadTournaments()">Retry</button>
+  </div>
+
+  <div *ngIf="!isLoading && !error">
+    <div class="event-selector" *ngIf="events.length > 0">
+      <label for="event-select">Select Event:</label>
+      <select id="event-select" [value]="selectedEventId || ''" (change)="onEventChange($event)">
+        <option value="">-- Select an event --</option>
+        <option *ngFor="let event of events" [value]="event.id">
+          {{ event.tournamentName }} - {{ event.name }}
+        </option>
+      </select>
+    </div>
+
+    <div *ngIf="isLoadingPlayers" class="loading">
+      <p>Loading players...</p>
+    </div>
+
+    <div *ngIf="!isLoadingPlayers && selectedEventId" class="player-list">
+      <div *ngIf="players.length === 0" class="no-players">
+        <p>No players found for this event.</p>
+      </div>
+      
+      <div *ngFor="let player of players" class="player-card">
+        <div class="player-avatar">{{ getPlayerInitials(player) }}</div>
+        <div class="player-info">
+          <h3>{{ getPlayerDisplayName(player) }}</h3>
+          <p *ngIf="player.user?.name">Name: {{ player.user?.name }}</p>
+          <p>Gamer Tag: {{ player.gamerTag }}</p>
+        </div>
       </div>
     </div>
-    <div class="player-card">
-      <div class="player-avatar">JS</div>
-      <div class="player-info">
-        <h3>Jane Smith</h3>
-        <p>Rank: #2</p>
-        <p>Wins: 38 | Losses: 15</p>
-      </div>
-    </div>
-    <div class="player-card">
-      <div class="player-avatar">MB</div>
-      <div class="player-info">
-        <h3>Mike Brown</h3>
-        <p>Rank: #3</p>
-        <p>Wins: 32 | Losses: 18</p>
-      </div>
+
+    <div *ngIf="!selectedEventId && events.length === 0" class="no-events">
+      <p>No events found. Make sure you have set your token in the Account page and have tournaments with events.</p>
     </div>
   </div>
 </div>

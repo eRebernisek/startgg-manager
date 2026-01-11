@@ -2,21 +2,35 @@
   <h1>Tournaments</h1>
   <p class="subtitle">Browse and manage tournaments</p>
   
-  <div class="tournament-list">
-    <div class="tournament-card">
-      <h3>Summer Championship 2024</h3>
-      <p class="date">June 15-16, 2024</p>
-      <p class="status">Upcoming</p>
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading tournaments...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadTournaments()">Retry</button>
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="tournament-list">
+    <div *ngIf="tournaments.length === 0" class="no-tournaments">
+      <p>No tournaments found. Make sure you have set your token in the Account page.</p>
     </div>
-    <div class="tournament-card">
-      <h3>Spring Tournament</h3>
-      <p class="date">March 20-21, 2024</p>
-      <p class="status">Completed</p>
-    </div>
-    <div class="tournament-card">
-      <h3>Winter Cup</h3>
-      <p class="date">December 10-11, 2023</p>
-      <p class="status">Completed</p>
+    
+    <div *ngFor="let tournament of tournaments" class="tournament-card">
+      <div class="tournament-image" *ngIf="getTournamentImage(tournament)">
+        <img [src]="getTournamentImage(tournament)!" [alt]="tournament.name" />
+      </div>
+      <div class="tournament-content">
+        <h3>{{ tournament.name }}</h3>
+        <p class="date" *ngIf="tournament.startAt">
+          {{ formatDate(tournament.startAt) }}
+          <span *ngIf="tournament.endAt && tournament.endAt !== tournament.startAt">
+            - {{ formatDate(tournament.endAt) }}
+          </span>
+        </p>
+        <p class="date" *ngIf="!tournament.startAt">Date TBD</p>
+        <p class="slug">@{{ tournament.slug }}</p>
+      </div>
     </div>
   </div>
 </div>

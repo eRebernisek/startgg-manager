@@ -2,39 +2,69 @@
   <h1>Matches</h1>
   <p class="subtitle">Recent and upcoming matches</p>
   
-  <div class="match-list">
-    <div class="match-card">
-      <div class="match-teams">
-        <span class="team">Team Alpha</span>
-        <span class="vs">vs</span>
-        <span class="team">Team Beta</span>
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading tournaments and events...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadTournaments()">Retry</button>
+  </div>
+
+  <div *ngIf="!isLoading && !error">
+    <div class="event-selector" *ngIf="events.length > 0">
+      <label for="event-select">Select Event:</label>
+      <select id="event-select" [value]="selectedEventId || ''" (change)="onEventChange($event)">
+        <option value="">-- Select an event --</option>
+        <option *ngFor="let event of events" [value]="event.id">
+          {{ event.tournamentName }} - {{ event.name }}
+        </option>
+      </select>
+    </div>
+
+    <div *ngIf="isLoadingMatches" class="loading">
+      <p>Loading matches...</p>
+    </div>
+
+    <div *ngIf="!isLoadingMatches && selectedEventId" class="match-list">
+      <div *ngIf="matches.length === 0" class="no-matches">
+        <p>No matches found for this event.</p>
       </div>
-      <div class="match-info">
-        <p class="score">2 - 1</p>
-        <p class="date">June 10, 2024</p>
+      
+      <div *ngFor="let match of matches" class="match-card">
+        <div class="match-header" *ngIf="match.event">
+          <p class="event-name">{{ match.event.tournament?.name }} - {{ match.event.name }}</p>
+          <p class="match-state">{{ getMatchState(match.state) }}</p>
+        </div>
+        
+        <div class="match-teams">
+          <div class="team" *ngIf="match.slots && match.slots[0]">
+            <span class="team-name">{{ getEntrantName(match.slots[0]) }}</span>
+            <span class="team-players" *ngIf="getEntrantPlayers(match.slots[0]) !== 'TBD'">
+              ({{ getEntrantPlayers(match.slots[0]) }})
+            </span>
+          </div>
+          <span class="vs">vs</span>
+          <div class="team" *ngIf="match.slots && match.slots[1]">
+            <span class="team-name">{{ getEntrantName(match.slots[1]) }}</span>
+            <span class="team-players" *ngIf="getEntrantPlayers(match.slots[1]) !== 'TBD'">
+              ({{ getEntrantPlayers(match.slots[1]) }})
+            </span>
+          </div>
+        </div>
+        
+        <div class="match-info">
+          <p class="score">{{ getMatchScore(match) }}</p>
+          <p class="round" *ngIf="match.round">Round {{ match.round }}</p>
+          <p class="winner" *ngIf="getWinnerName(match)">
+            Winner: {{ getWinnerName(match) }}
+          </p>
+        </div>
       </div>
     </div>
-    <div class="match-card">
-      <div class="match-teams">
-        <span class="team">Team Gamma</span>
-        <span class="vs">vs</span>
-        <span class="team">Team Delta</span>
-      </div>
-      <div class="match-info">
-        <p class="score">Upcoming</p>
-        <p class="date">June 15, 2024</p>
-      </div>
-    </div>
-    <div class="match-card">
-      <div class="match-teams">
-        <span class="team">Team Echo</span>
-        <span class="vs">vs</span>
-        <span class="team">Team Foxtrot</span>
-      </div>
-      <div class="match-info">
-        <p class="score">1 - 2</p>
-        <p class="date">June 5, 2024</p>
-      </div>
+
+    <div *ngIf="!selectedEventId && events.length === 0" class="no-events">
+      <p>No events found. Make sure you have set your token in the Account page and have tournaments with events.</p>
     </div>
   </div>
 </div>
