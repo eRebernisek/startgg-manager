@@ -1,0 +1,33 @@
+<div class="login-container">
+  <h1>Login</h1>
+  <p class="subtitle">Authenticate with StartGG to access your tournaments</p>
+  
+  <div *ngIf="!isAuthenticated" class="login-section">
+    <p class="info-message">
+      Click the button below to log in with your StartGG account. 
+      This will securely authenticate you and grant access to your tournaments.
+    </p>
+    <button 
+      type="button" 
+      class="login-button" 
+      (click)="login()" 
+      [disabled]="isLoading">
+      {{ isLoading ? 'Redirecting...' : 'Login with StartGG' }}
+    </button>
+    <p class="help-message">
+      <strong>Note:</strong> You need to register an OAuth application with StartGG first. 
+      Visit <a href="https://developer.start.gg/docs/oauth/oauth-overview/" target="_blank" rel="noopener noreferrer">StartGG Developer Portal</a> 
+      to create an OAuth app and configure the client ID and secret.
+    </p>
+  </div>
+
+  <div *ngIf="isAuthenticated" class="authenticated-section">
+    <div class="success-message">
+      <h2>✓ You are logged in!</h2>
+      <p>You are successfully authenticated with StartGG.</p>
+      <button type="button" class="logout-button" (click)="logout()">
+        Logout
+      </button>
+    </div>
+  </div>
+</div>

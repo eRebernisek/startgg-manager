@@ -1,0 +1,81 @@
+.login-container
+  max-width: 600px
+  margin: 0 auto
+  padding: 2rem
+
+  h1
+    font-size: 2rem
+    margin-bottom: 0.5rem
+
+  .subtitle
+    color: #666
+    margin-bottom: 2rem
+
+  .login-section
+    .info-message
+      background: #f0f7ff
+      border: 1px solid #b3d9ff
+      border-radius: 8px
+      padding: 1rem
+      margin-bottom: 1.5rem
+      color: #004085
+
+    .login-button
+      background: #007bff
+      color: white
+      border: none
+      border-radius: 8px
+      padding: 1rem 2rem
+      font-size: 1.1rem
+      cursor: pointer
+      width: 100%
+      margin-bottom: 1rem
+      transition: background 0.3s
+
+      &:hover:not(:disabled)
+        background: #0056b3
+
+      &:disabled
+        background: #ccc
+        cursor: not-allowed
+
+    .help-message
+      font-size: 0.9rem
+      color: #666
+      line-height: 1.6
+
+      a
+        color: #007bff
+        text-decoration: none
+
+        &:hover
+          text-decoration: underline
+
+  .authenticated-section
+    .success-message
+      background: #d4edda
+      border: 1px solid #c3e6cb
+      border-radius: 8px
+      padding: 2rem
+      text-align: center
+
+      h2
+        color: #155724
+        margin-bottom: 1rem
+
+      p
+        color: #155724
+        margin-bottom: 1.5rem
+
+      .logout-button
+        background: #dc3545
+        color: white
+        border: none
+        border-radius: 8px
+        padding: 0.75rem 1.5rem
+        font-size: 1rem
+        cursor: pointer
+        transition: background 0.3s
+
+        &:hover
+          background: #c82333

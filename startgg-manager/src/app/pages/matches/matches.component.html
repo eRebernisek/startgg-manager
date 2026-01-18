@@ -31,40 +31,200 @@
         <p>No matches found for this event.</p>
       </div>
       
-      <div *ngFor="let match of matches" class="match-card">
-        <div class="match-header" *ngIf="match.event">
-          <p class="event-name">{{ match.event.tournament?.name }} - {{ match.event.name }}</p>
-          <p class="match-state">{{ getMatchState(match.state) }}</p>
-        </div>
-        
-        <div class="match-teams">
-          <div class="team" *ngIf="match.slots && match.slots[0]">
-            <span class="team-name">{{ getEntrantName(match.slots[0]) }}</span>
-            <span class="team-players" *ngIf="getEntrantPlayers(match.slots[0]) !== 'TBD'">
-              ({{ getEntrantPlayers(match.slots[0]) }})
-            </span>
+      <div *ngFor="let match of matches" class="match-card" [class.expanded]="match.isExpanded">
+        <div class="match-main" (click)="toggleMatch(match.id)">
+          <div class="match-header">
+            <p class="match-state">{{ getMatchState(match.state) }}</p>
           </div>
-          <span class="vs">vs</span>
-          <div class="team" *ngIf="match.slots && match.slots[1]">
-            <span class="team-name">{{ getEntrantName(match.slots[1]) }}</span>
-            <span class="team-players" *ngIf="getEntrantPlayers(match.slots[1]) !== 'TBD'">
-              ({{ getEntrantPlayers(match.slots[1]) }})
-            </span>
+          
+          <div class="match-teams">
+            <div class="team" *ngIf="match.slots && match.slots[0]">
+              <span class="team-name">{{ getEntrantName(match.slots[0]) }}</span>
+              <span class="team-players" *ngIf="getEntrantPlayers(match.slots[0]) !== 'TBD'">
+                ({{ getEntrantPlayers(match.slots[0]) }})
+              </span>
+            </div>
+            <span class="vs">vs</span>
+            <div class="team" *ngIf="match.slots && match.slots[1]">
+              <span class="team-name">{{ getEntrantName(match.slots[1]) }}</span>
+              <span class="team-players" *ngIf="getEntrantPlayers(match.slots[1]) !== 'TBD'">
+                ({{ getEntrantPlayers(match.slots[1]) }})
+              </span>
+            </div>
+          </div>
+          
+          <div class="match-info">
+            <p class="score">{{ getMatchScore(match) }}</p>
+            <p class="round" *ngIf="match.round">Round {{ match.round }}</p>
+            <p class="winner" *ngIf="getWinnerName(match)">
+              Winner: {{ getWinnerName(match) }}
+            </p>
           </div>
         </div>
-        
-        <div class="match-info">
-          <p class="score">{{ getMatchScore(match) }}</p>
-          <p class="round" *ngIf="match.round">Round {{ match.round }}</p>
-          <p class="winner" *ngIf="getWinnerName(match)">
-            Winner: {{ getWinnerName(match) }}
-          </p>
+
+        <div class="match-actions" (click)="$event.stopPropagation()">
+          <button 
+            class="action-btn start-btn" 
+            (click)="startMatch(match, $event)"
+            [disabled]="match.state === 2 || match.state === 3">
+            Start
+          </button>
+          <button 
+            class="action-btn reset-btn" 
+            (click)="resetMatch(match, $event)">
+            Reset
+          </button>
+          <button 
+            class="action-btn open-btn" 
+            (click)="openInStartGG(match.id, $event)">
+            Open in start.gg
+          </button>
+        </div>
+
+        <div class="match-details" *ngIf="match.isExpanded" (click)="$event.stopPropagation()">
+          <h3>Games</h3>
+          
+          <div *ngIf="loadingMatchDetails.has(match.id)" class="loading-games">
+            <p>Loading games...</p>
+          </div>
+          
+          <div *ngIf="!loadingMatchDetails.has(match.id)" class="games-list">
+            <div *ngIf="match.games.length === 0" class="no-games">
+              <p>No games found for this match.</p>
+            </div>
+            
+            <div *ngFor="let game of match.games; let i = index" class="game-item">
+              <div class="game-header">
+                <span class="game-number">Game {{ game.orderNum || (i + 1) }}</span>
+                <span class="game-score" *ngIf="game.entrant1Score !== null && game.entrant2Score !== null">
+                  {{ game.entrant1Score }} - {{ game.entrant2Score }}
+                </span>
+              </div>
+              
+              <div class="game-content">
+                <div class="game-entrant" *ngIf="match.slots && match.slots[0]">
+                  <div class="character-selector">
+                    <button 
+                      class="character-btn" 
+                      [class.selected]="game.entrant1CharacterId"
+                      (click)="openCharacterModal(match, i, 0, $event)"
+                      title="Select Character">
+                      <img 
+                        *ngIf="getSelectedCharacter(match, i, 0)?.imageUrl" 
+                        [src]="getSelectedCharacter(match, i, 0)!.imageUrl!" 
+                        [alt]="getSelectedCharacter(match, i, 0)!.name"
+                        class="character-icon" />
+                      <span *ngIf="!getSelectedCharacter(match, i, 0)">🎮</span>
+                    </button>
+                  </div>
+                  <span class="entrant-name">{{ getEntrantName(match.slots[0]) }}</span>
+                  <button 
+                    class="winner-btn" 
+                    [class.winner]="isGameWinner(match, i, getEntrantId(match.slots[0]))"
+                    (click)="setGameWinner(match, i, getEntrantId(match.slots[0]) || '', $event)"
+                    title="Mark as Winner">
+                    W
+                  </button>
+                </div>
+                
+                <div class="game-vs">vs</div>
+                
+                <div class="game-entrant" *ngIf="match.slots && match.slots[1]">
+                  <div class="character-selector">
+                    <button 
+                      class="character-btn" 
+                      [class.selected]="game.entrant2CharacterId"
+                      (click)="openCharacterModal(match, i, 1, $event)"
+                      title="Select Character">
+                      <img 
+                        *ngIf="getSelectedCharacter(match, i, 1)?.imageUrl" 
+                        [src]="getSelectedCharacter(match, i, 1)!.imageUrl!" 
+                        [alt]="getSelectedCharacter(match, i, 1)!.name"
+                        class="character-icon" />
+                      <span *ngIf="!getSelectedCharacter(match, i, 1)">🎮</span>
+                    </button>
+                  </div>
+                  <span class="entrant-name">{{ getEntrantName(match.slots[1]) }}</span>
+                  <button 
+                    class="winner-btn" 
+                    [class.winner]="isGameWinner(match, i, getEntrantId(match.slots[1]))"
+                    (click)="setGameWinner(match, i, getEntrantId(match.slots[1]) || '', $event)"
+                    title="Mark as Winner">
+                    W
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-management">
+            <button 
+              class="game-action-btn add-game-btn" 
+              (click)="addGame(match, $event)">
+              Add Game
+            </button>
+            <button 
+              class="game-action-btn delete-game-btn" 
+              (click)="deleteGame(match, match.games.length - 1, $event)"
+              [disabled]="match.games.length <= 1">
+              Delete Game
+            </button>
+          </div>
+
+          <div class="save-section">
+            <button 
+              class="save-btn" 
+              (click)="saveMatch(match, $event)"
+              [disabled]="!match.isDirty || savingMatchId === match.id">
+              {{ savingMatchId === match.id ? 'Saving...' : 'Save' }}
+            </button>
+            <button 
+              class="submit-btn" 
+              (click)="submitMatch(match, $event)">
+              Submit
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <div *ngIf="!selectedEventId && events.length === 0" class="no-events">
       <p>No events found. Make sure you have set your token in the Account page and have tournaments with events.</p>
+    </div>
+  </div>
+
+  <!-- Backdrop overlay to close modal when clicking outside -->
+  <div *ngIf="showCharacterModal && characterModalContext" 
+       class="character-modal-backdrop" 
+       (click)="closeCharacterModal()"></div>
+  
+  <!-- Character Selection Modal - Centered on screen -->
+  <div *ngIf="showCharacterModal && characterModalContext" 
+       class="character-modal-popup"
+       (click)="$event.stopPropagation()">
+    <div class="character-modal-header">
+      <h3>Select Character</h3>
+      <button class="close-btn" (click)="closeCharacterModal()">×</button>
+    </div>
+    <div class="character-modal-content">
+      <div *ngIf="characterModalContext.match.availableCharacters && characterModalContext.match.availableCharacters.length > 0" class="characters-grid">
+        <button 
+          *ngFor="let character of characterModalContext.match.availableCharacters"
+          class="character-option"
+          [class.selected]="(characterModalContext.entrantIndex === 0 ? characterModalContext.match.games[characterModalContext.gameIndex].entrant1CharacterId : characterModalContext.match.games[characterModalContext.gameIndex].entrant2CharacterId) === character.id"
+          (click)="selectCharacter(character.id)">
+          <img 
+            *ngIf="character.imageUrl" 
+            [src]="character.imageUrl" 
+            [alt]="character.name"
+            class="character-option-icon" />
+          <span *ngIf="!character.imageUrl" class="character-option-placeholder">🎮</span>
+          <span class="character-option-name">{{ character.name }}</span>
+        </button>
+      </div>
+      <div *ngIf="!characterModalContext.match.availableCharacters || characterModalContext.match.availableCharacters.length === 0" class="no-characters">
+        <p>No characters available for this game.</p>
+      </div>
     </div>
   </div>
 </div>
