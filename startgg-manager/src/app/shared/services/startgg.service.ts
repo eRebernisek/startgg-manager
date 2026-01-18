@@ -190,6 +190,10 @@ export class StartggService {
     try {
       const token = this.getToken();
       if (!token) {
+        // During SSR/prerendering, return empty array instead of throwing
+        if (!isPlatformBrowser(this.platformId)) {
+          return [];
+        }
         throw new Error('No API token found. Please set your token in the Account page.');
       }
 
@@ -355,7 +359,7 @@ export class StartggService {
             }
             sets(filters: {
               showByes: false
-            }, perPage: 100) {
+            }, perPage: 100, sortType: MAGIC) {
               nodes {
                 id
                 state

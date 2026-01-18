@@ -11,6 +11,64 @@
     color: #666
     margin-bottom: 2rem
 
+  .event-selector
+    margin-bottom: 1.5rem
+
+    label
+      display: block
+      margin-bottom: 0.5rem
+      font-weight: 500
+      color: #333
+
+    .event-selector-controls
+      display: flex
+      gap: 0.75rem
+      align-items: center
+
+    select
+      width: 50%
+      padding: 0.75rem
+      border: 1px solid #ddd
+      border-radius: 6px
+      font-size: 1rem
+      background: white
+      cursor: pointer
+
+    .refresh-btn
+      padding: 0.75rem 1rem
+      border: none
+      border-radius: 6px
+      background: #007bff
+      color: white
+      font-size: 1rem
+      cursor: pointer
+      transition: all 0.2s
+      min-height: 44px
+      min-width: 44px
+      display: flex
+      align-items: center
+      justify-content: center
+
+      &:hover:not(:disabled)
+        background: #0056b3
+        transform: scale(1.05)
+
+      &:active:not(:disabled)
+        transform: scale(0.95)
+
+      &:disabled
+        background: #ccc
+        cursor: not-allowed
+        opacity: 0.6
+
+      .refresh-icon
+        font-size: 1.25rem
+        display: inline-block
+        transition: transform 0.3s
+
+      &:not(:disabled):hover .refresh-icon
+        transform: rotate(180deg)
+
   .match-list
     display: grid
     gap: 1.5rem
@@ -32,12 +90,15 @@
       display: flex
       justify-content: space-between
       align-items: center
+      flex-wrap: wrap
+      gap: 1rem
 
     .match-header
       display: flex
       justify-content: space-between
       align-items: center
       margin-bottom: 1rem
+      width: 100%
 
       .event-name
         font-size: 0.9rem
@@ -57,22 +118,37 @@
       align-items: center
       gap: 1rem
       flex: 1
+      min-width: 0
 
     .team
       font-weight: bold
       color: #333
+      min-width: 0
+      flex: 1
+
+      .team-name
+        display: block
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
 
       .team-players
         font-weight: normal
         color: #666
         font-size: 0.9rem
+        display: block
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
 
     .vs
       color: #999
       font-weight: bold
+      flex-shrink: 0
 
     .match-info
       text-align: right
+      flex-shrink: 0
 
     .score
       font-size: 1.25rem
@@ -98,6 +174,7 @@
       background: #e9ecef
       border-top: 1px solid #ddd
       justify-content: center
+      flex-wrap: wrap
 
       .action-btn
         padding: 0.5rem 1rem
@@ -107,6 +184,9 @@
         cursor: pointer
         transition: all 0.2s
         font-weight: 500
+        min-height: 44px
+        flex: 1
+        min-width: 100px
 
         &.start-btn
           background: #28a745
@@ -187,12 +267,14 @@
           display: flex
           align-items: center
           gap: 1rem
+          flex-wrap: wrap
 
         .game-entrant
           display: flex
           align-items: center
           gap: 0.5rem
           flex: 1
+          min-width: 0
 
           .character-selector
             .character-btn
@@ -209,6 +291,7 @@
               transition: all 0.2s
               padding: 0
               overflow: hidden
+              flex-shrink: 0
 
               &:hover
                 border-color: #007bff
@@ -231,6 +314,10 @@
             flex: 1
             font-weight: 500
             color: #333
+            min-width: 0
+            overflow: hidden
+            text-overflow: ellipsis
+            white-space: nowrap
 
           .winner-btn
             width: 32px
@@ -242,6 +329,7 @@
             font-weight: bold
             color: #666
             transition: all 0.2s
+            flex-shrink: 0
 
             &:hover
               border-color: #28a745
@@ -256,6 +344,7 @@
           color: #999
           font-weight: bold
           margin: 0 0.5rem
+          flex-shrink: 0
 
       .game-management
         display: flex
@@ -263,6 +352,7 @@
         margin-bottom: 1.5rem
         padding-top: 1rem
         border-top: 1px solid #dee2e6
+        flex-wrap: wrap
 
         .game-action-btn
           padding: 0.5rem 1rem
@@ -272,6 +362,9 @@
           cursor: pointer
           transition: all 0.2s
           font-weight: 500
+          min-height: 44px
+          flex: 1
+          min-width: 120px
 
           &.add-game-btn
             background: #007bff
@@ -296,6 +389,7 @@
         border-top: 2px solid #007bff
         display: flex
         gap: 0.75rem
+        flex-direction: row
 
         .save-btn
           flex: 1
@@ -308,6 +402,7 @@
           font-weight: bold
           cursor: pointer
           transition: all 0.2s
+          min-height: 44px
 
           &:hover:not(:disabled)
             background: #218838
@@ -327,9 +422,156 @@
           font-weight: bold
           cursor: pointer
           transition: all 0.2s
+          min-height: 44px
 
           &:hover
             background: #0056b3
+
+  .loading, .error, .no-matches, .no-events
+    text-align: center
+    padding: 2rem
+    color: #666
+
+  .error
+    color: #dc3545
+
+    button
+      margin-top: 1rem
+      padding: 0.75rem 1.5rem
+      background: #007bff
+      color: white
+      border: none
+      border-radius: 6px
+      font-size: 1rem
+      cursor: pointer
+      min-height: 44px
+
+      &:hover
+        background: #0056b3
+
+// Mobile responsive styles
+@media (max-width: 768px)
+  .matches-container
+    padding: 1rem
+
+    h1
+      font-size: 1.75rem
+      margin-bottom: 0.5rem
+
+    .subtitle
+      font-size: 0.9rem
+      margin-bottom: 1.5rem
+
+    .event-selector
+      .event-selector-controls
+        select
+          width: 50%
+
+      .refresh-btn
+        min-width: 44px
+        padding: 0.75rem
+
+    .match-card
+      .match-main
+        padding: 1rem
+        flex-direction: column
+        align-items: stretch
+
+      .match-header
+        margin-bottom: 0.75rem
+
+      .match-teams
+        flex-direction: column
+        align-items: stretch
+        gap: 0.75rem
+        width: 100%
+
+      .team
+        text-align: center
+
+        .team-name
+          white-space: normal
+          word-break: break-word
+
+        .team-players
+          white-space: normal
+          word-break: break-word
+
+      .vs
+        margin: 0.5rem 0
+
+      .match-info
+        text-align: center
+        width: 100%
+        margin-top: 0.75rem
+
+      .match-actions
+        padding: 0.75rem
+        flex-direction: column
+
+        .action-btn
+          width: 100%
+          min-width: unset
+
+      .match-details
+        padding: 1rem
+
+        h3
+          font-size: 1.1rem
+          margin-bottom: 0.75rem
+
+        .games-list
+          gap: 0.75rem
+          margin-bottom: 1rem
+
+          .game-item
+            padding: 0.75rem
+
+          .game-header
+            margin-bottom: 0.5rem
+
+          .game-content
+            flex-direction: column
+            gap: 0.75rem
+
+          .game-entrant
+            width: 100%
+            justify-content: space-between
+
+            .entrant-name
+              white-space: normal
+              word-break: break-word
+
+          .game-vs
+            margin: 0.5rem 0
+
+        .game-management
+          flex-direction: column
+
+          .game-action-btn
+            width: 100%
+            min-width: unset
+
+        .save-section
+          gap: 0.5rem
+
+@media (max-width: 480px)
+  .matches-container
+    padding: 0.75rem
+
+    h1
+      font-size: 1.5rem
+
+    .match-card
+      .match-main
+        padding: 0.75rem
+
+      .match-details
+        padding: 0.75rem
+
+        .games-list
+          .game-item
+            padding: 0.5rem
 
 .character-modal-backdrop
   position: fixed
@@ -353,6 +595,7 @@
   max-width: 600px
   max-height: 80vh
   overflow-y: auto
+  width: 90%
 
   .character-modal-header
     display: flex
@@ -373,13 +616,15 @@
       cursor: pointer
       color: #666
       padding: 0
-      width: 24px
-      height: 24px
+      width: 32px
+      height: 32px
       display: flex
       align-items: center
       justify-content: center
       border-radius: 4px
       transition: all 0.2s
+      min-width: 44px
+      min-height: 44px
 
       &:hover
         background: #f0f0f0
@@ -407,11 +652,15 @@
       cursor: pointer
       transition: all 0.2s
       text-align: center
+      min-height: 44px
 
       &:hover
         border-color: #007bff
         background: #f0f7ff
         transform: scale(1.05)
+
+      &:active
+        transform: scale(0.95)
 
       &.selected
         border-color: #007bff
@@ -444,4 +693,74 @@
       color: #999
       font-style: italic
 
-.character-modal-overlay
+// Mobile responsive styles for character modal
+@media (max-width: 768px)
+  .character-modal-popup
+    min-width: unset
+    max-width: 90vw
+    width: 90vw
+    max-height: 85vh
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+
+    .character-modal-header
+      padding: 0.75rem
+
+      h3
+        font-size: 1rem
+
+      .close-btn
+        width: 36px
+        height: 36px
+        font-size: 1.25rem
+
+    .character-modal-content
+      padding: 0.75rem
+
+      .characters-grid
+        grid-template-columns: repeat(3, 1fr)
+        gap: 0.5rem
+        max-height: 65vh
+
+      .character-option
+        padding: 0.5rem
+
+        .character-option-icon
+          width: 48px
+          height: 48px
+
+        .character-option-placeholder
+          width: 48px
+          height: 48px
+          font-size: 1.5rem
+
+        .character-option-name
+          font-size: 0.75rem
+
+@media (max-width: 480px)
+  .character-modal-popup
+    width: 95vw
+    max-width: 95vw
+
+    .character-modal-content
+      padding: 0.5rem
+
+      .characters-grid
+        grid-template-columns: repeat(2, 1fr)
+        gap: 0.5rem
+
+      .character-option
+        padding: 0.5rem
+
+        .character-option-icon
+          width: 40px
+          height: 40px
+
+        .character-option-placeholder
+          width: 40px
+          height: 40px
+          font-size: 1.25rem
+
+        .character-option-name
+          font-size: 0.7rem

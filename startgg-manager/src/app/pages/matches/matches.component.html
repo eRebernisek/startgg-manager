@@ -14,12 +14,21 @@
   <div *ngIf="!isLoading && !error">
     <div class="event-selector" *ngIf="events.length > 0">
       <label for="event-select">Select Event:</label>
-      <select id="event-select" [value]="selectedEventId || ''" (change)="onEventChange($event)">
-        <option value="">-- Select an event --</option>
-        <option *ngFor="let event of events" [value]="event.id">
-          {{ event.tournamentName }} - {{ event.name }}
-        </option>
-      </select>
+      <div class="event-selector-controls">
+        <select id="event-select" [value]="selectedEventId || ''" (change)="onEventChange($event)">
+          <option value="">-- Select an event --</option>
+          <option *ngFor="let event of events" [value]="event.id">
+            {{ event.tournamentName }} - {{ event.name }}
+          </option>
+        </select>
+        <button 
+          class="refresh-btn" 
+          (click)="refreshMatches()" 
+          [disabled]="!selectedEventId || isLoadingMatches"
+          title="Refresh matches">
+          <span class="refresh-icon">↻</span>
+        </button>
+      </div>
     </div>
 
     <div *ngIf="isLoadingMatches" class="loading">

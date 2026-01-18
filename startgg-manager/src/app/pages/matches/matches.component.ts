@@ -195,6 +195,12 @@ export class MatchesComponent implements OnInit {
     this.loadMatches();
   }
 
+  refreshMatches() {
+    if (this.selectedEventId) {
+      this.loadMatches();
+    }
+  }
+
   getMatchState(state: number): string {
     // Match states: 1 = Pending, 2 = In Progress, 3 = Complete
     switch (state) {
