@@ -417,9 +417,17 @@ export class MatchesComponent implements OnInit {
       const entrant2Id = this.getEntrantId(set.slots?.[1]);
       
       if (game.winnerId === entrant1Id) {
-        game.entrant1Score = (game.entrant1Score || 0) + 1;
+        game.entrant1Score =  1;
+        game.entrant2Score =  0;
       } else if (game.winnerId === entrant2Id) {
-        game.entrant2Score = (game.entrant2Score || 0) + 1;
+        game.entrant2Score = 1;
+        game.entrant1Score = 0;
+      }
+
+      //Check if no one is the winner, set both scores to 0
+      if (!game.winnerId) {
+        game.entrant1Score = 0;
+        game.entrant2Score = 0;
       }
     }
     

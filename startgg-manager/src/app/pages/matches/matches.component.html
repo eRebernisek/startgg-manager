@@ -99,18 +99,24 @@
           <button 
             class="action-btn start-btn" 
             (click)="startSet(set, $event)"
-            [disabled]="set.state === 2 || set.state === 3">
-            Start
+            [disabled]="set.state === 2 || set.state === 3"
+            title="Start"
+            aria-label="Start set">
+            ▶
           </button>
           <button 
             class="action-btn reset-btn" 
-            (click)="resetSet(set, $event)">
-            Reset
+            (click)="resetSet(set, $event)"
+            title="Reset"
+            aria-label="Reset set">
+            ↻
           </button>
           <button 
             class="action-btn open-btn" 
-            (click)="openInStartGG(set.id, $event)">
-            Open in start.gg
+            (click)="openInStartGG(set.id, $event)"
+            title="Open in start.gg"
+            aria-label="Open in start.gg">
+            ↗
           </button>
         </div>
 
@@ -129,9 +135,6 @@
             <div *ngFor="let game of set.games; let i = index" class="game-item">
               <div class="game-header">
                 <span class="game-number">Game {{ game.orderNum || (i + 1) }}</span>
-                <span class="game-score" *ngIf="game.entrant1Score !== null && game.entrant2Score !== null">
-                  {{ game.entrant1Score }} - {{ game.entrant2Score }}
-                </span>
               </div>
               
               <div class="game-content">
