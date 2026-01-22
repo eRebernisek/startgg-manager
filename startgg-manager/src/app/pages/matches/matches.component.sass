@@ -11,7 +11,7 @@
     color: #666
     margin-bottom: 2rem
 
-  .event-selector
+  .tournament-selector, .event-selector
     margin-bottom: 1.5rem
 
     label
@@ -20,7 +20,7 @@
       font-weight: 500
       color: #333
 
-    .event-selector-controls
+    .tournament-selector-controls, .event-selector-controls
       display: flex
       gap: 0.75rem
       align-items: center
@@ -125,12 +125,33 @@
       color: #333
       min-width: 0
       flex: 1
+      display: flex
+      align-items: center
+      gap: 0.75rem
+
+      .team-player-image
+        width: 40px
+        height: 40px
+        border-radius: 50%
+        object-fit: cover
+        flex-shrink: 0
+        border: 2px solid #ddd
+
+      .team-info
+        flex: 1
+        min-width: 0
+        display: flex
+        flex-direction: column
+        gap: 0.25rem
 
       .team-name
         display: block
         overflow: hidden
         text-overflow: ellipsis
         white-space: nowrap
+
+      .team-score-mobile
+        display: none
 
       .team-players
         font-weight: normal
@@ -462,8 +483,8 @@
       font-size: 0.9rem
       margin-bottom: 1.5rem
 
-    .event-selector
-      .event-selector-controls
+    .tournament-selector, .event-selector
+      .tournament-selector-controls, .event-selector-controls
         select
           width: 50%
 
@@ -481,24 +502,67 @@
         margin-bottom: 0.75rem
 
       .match-teams
-        flex-direction: column
-        align-items: stretch
-        gap: 0.75rem
+        flex-direction: row
+        align-items: center
+        gap: 0.5rem
         width: 100%
 
       .team
         text-align: center
+        flex: 1
+        min-width: 0
+        justify-content: space-between
+        align-items: center
+        gap: 0.25rem
+        display: grid
+        grid-template-columns: auto 1fr auto
+        align-items: center
+
+        .team-player-image
+          width: 48px
+          height: 48px
+          flex-shrink: 0
+
+        .team-info
+          align-items: center
+          min-width: 0
+          max-width: 100%
+          display: flex
+          justify-content: center
+          flex-direction: column
+          overflow: hidden
 
         .team-name
-          white-space: normal
-          word-break: break-word
+          white-space: nowrap
+          overflow: hidden
+          text-overflow: ellipsis
+          display: block
+          text-align: center
+          width: 100%
+          max-width: 100%
+          font-size: 1rem
+          box-sizing: border-box
+
+        .team-score-mobile
+          display: flex
+          align-items: center
+          justify-content: center
+          font-size: 1.4rem
+          font-weight: bold
+          color: #007bff
+          padding: 0.5rem 0.75rem
+          flex-shrink: 0
+          min-width: fit-content
 
         .team-players
-          white-space: normal
-          word-break: break-word
+          white-space: nowrap
+          overflow: hidden
+          text-overflow: ellipsis
+          display: block
 
       .vs
-        margin: 0.5rem 0
+        margin: 0
+        flex-shrink: 0
 
       .match-info
         text-align: center
@@ -565,6 +629,32 @@
     .match-card
       .match-main
         padding: 0.75rem
+
+      .match-teams
+        gap: 0.25rem
+
+        .team
+          gap: 0.15rem
+          grid-template-columns: auto 1fr auto
+
+          .team-player-image
+            width: 44px
+            height: 44px
+            flex-shrink: 0
+
+          .team-info
+            min-width: 0
+            max-width: 100%
+            overflow: hidden
+
+            .team-name
+              font-size: 0.9rem
+              max-width: 100%
+
+          .team-score-mobile
+            font-size: 1.25rem
+            padding: 0.4rem 0.5rem
+            flex-shrink: 0
 
       .match-details
         padding: 0.75rem

@@ -37,7 +37,12 @@ export class PlayersComponent implements OnInit {
       this.tournaments = await this.startggService.getTournaments();
       if (this.tournaments.length > 0) {
         const tournamentIds = this.tournaments.map(t => t.id);
-        this.events = await this.startggService.getAllEventsFromTournaments(tournamentIds);
+        // Load events from all tournaments
+        const eventPromises = tournamentIds.map(tournamentId => 
+          this.startggService.getAllEventsFromTournament(tournamentId)
+        );
+        const eventsArrays = await Promise.all(eventPromises);
+        this.events = eventsArrays.flat();
         // Auto-select first event if available
         if (this.events.length > 0) {
           this.selectedEventId = this.events[0].id;

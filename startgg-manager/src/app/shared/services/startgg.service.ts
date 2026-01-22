@@ -16,6 +16,8 @@ export interface Tournament {
   events?: Event[];
 }
 
+// An updated Player interface with more info from getPlayerInfo (user, characters, etc.)
+
 export interface Player {
   id: string;
   gamerTag: string;
@@ -23,11 +25,24 @@ export interface Player {
   user?: {
     id: string;
     name?: string;
+    email?: string;
     slug?: string;
+    images?: Array<{
+      url: string;
+      type: string;
+    }>;
     player?: {
       gamerTag: string;
     };
   };
+  characters?: Array<{
+    id: string;
+    name: string;
+    images?: Array<{
+      url: string;
+      type: string;
+    }>;
+  }>;
 }
 
 export interface Set {
@@ -328,10 +343,10 @@ export class StartggService {
     }
   }
 
-  async getEventMatches(eventId: string): Promise<Set[]> {
+  async getEventSets(eventId: string): Promise<Set[]> {
     try {
       const query = `
-        query GetEventMatches($eventId: ID!) {
+        query GetEventSets($eventId: ID!) {
           event(id: $eventId) {
             id
             name
@@ -456,7 +471,7 @@ export class StartggService {
         };
       }>(query, { eventId });
 
-      const matches: Set[] = (data.event?.sets?.nodes || []).map(set => ({
+      const sets: Set[] = (data.event?.sets?.nodes || []).map(set => ({
         id: set.id,
         state: set.state,
         round: set.round,
@@ -467,62 +482,60 @@ export class StartggService {
         videogame: data.event?.videogame
       }));
 
-      return matches;
+      return sets;
     } catch (error) {
-      console.error('Error fetching event matches:', error);
+      console.error('Error fetching event sets:', error);
       throw error;
     }
   }
 
-  async getAllEventsFromTournaments(tournamentIds: string[]): Promise<Array<{ id: string; name: string; tournamentId: string; tournamentName: string }>> {
+  async getAllEventsFromTournament(tournamentId: any): Promise<Array<{ id: string; name: string; tournamentId: string; tournamentName: string }>> {
     try {
-      const events: Array<{ id: string; name: string; tournamentId: string; tournamentName: string }> = [];
-      
-      for (const tournamentId of tournamentIds) {
-        const query = `
-          query GetTournamentEvents($tournamentId: ID!) {
-            tournament(id: $tournamentId) {
+      const query = `
+        query GetTournamentEvents($tournamentId: ID!) {
+          tournament(id: $tournamentId) {
+            id
+            name
+            events {
               id
               name
-              events {
-                id
-                name
-              }
             }
           }
-        `;
+        }
+      `;
 
-        const data = await this.query<{
-          tournament: {
+      const data = await this.query<{
+        tournament: {
+          id: string;
+          name: string;
+          events: Array<{
             id: string;
             name: string;
-            events: Array<{
-              id: string;
-              name: string;
-            }>;
-          };
-        }>(query, { tournamentId: tournamentId });
+          }>;
+        };
+      }>(query, { tournamentId });
 
-        if (data.tournament?.events) {
-          data.tournament.events.forEach(event => {
-            events.push({
-              id: event.id,
-              name: event.name,
-              tournamentId: data.tournament.id,
-              tournamentName: data.tournament.name
-            });
+      const events: Array<{ id: string; name: string; tournamentId: string; tournamentName: string }> = [];
+
+      if (data.tournament?.events) {
+        data.tournament.events.forEach(event => {
+          events.push({
+            id: event.id,
+            name: event.name,
+            tournamentId: data.tournament.id,
+            tournamentName: data.tournament.name
           });
-        }
+        });
       }
 
       return events;
     } catch (error) {
-      console.error('Error fetching events from tournaments:', error);
+      console.error('Error fetching events from tournament:', error);
       throw error;
     }
   }
 
-  async startMatch(setId: string): Promise<Set> {
+  async startSet(setId: string): Promise<Set> {
     try {
       const mutation = `
         mutation MarkSetInProgress($setId: ID!) {
@@ -565,12 +578,12 @@ export class StartggService {
 
       return data.markSetInProgress;
     } catch (error) {
-      console.error('Error starting match:', error);
+      console.error('Error starting set:', error);
       throw error;
     }
   }
 
-  async resetMatch(setId: string, resetDependentSets: boolean = false): Promise<Set> {
+  async resetSet(setId: string, resetDependentSets: boolean = false): Promise<Set> {
     try {
       const mutation = `
         mutation ResetSet($setId: ID!, $resetDependentSets: Boolean) {
@@ -613,7 +626,7 @@ export class StartggService {
 
       return data.resetSet;
     } catch (error) {
-      console.error('Error resetting match:', error);
+      console.error('Error resetting set:', error);
       throw error;
     }
   }
@@ -934,11 +947,11 @@ export class StartggService {
     }
   }
 
-  getMatchUrl(matchId: string): string {
-    return `https://start.gg/set/${matchId}`;
+  getSetUrl(setId: string): string {
+    return `https://start.gg/set/${setId}`;
   }
 
-  async getMatchDetails(setId: string): Promise<{
+  async getSetDetails(setId: string): Promise<{
     id: string;
     state: number;
     games: Array<{
@@ -1063,8 +1076,76 @@ export class StartggService {
 
       return data.set;
     } catch (error) {
-      console.error('Error fetching match details:', error);
+      console.error('Error fetching set details:', error);
       throw error;
     }
   }
+  async getPlayerInfo(playerId: string): Promise<Player> {
+    try {
+      const query = `
+        query PlayerInfo($playerId: ID!) {
+          player(id: $playerId) {
+            id
+            gamerTag
+            prefix
+            user {
+              id
+              name
+              email
+              images {
+                url
+                type
+              }
+            }
+            characters {
+              id
+              name
+              images {
+                url
+                type
+              }
+            }
+          }
+        }
+      `;
+      const data = await this.query<{
+        player: {
+          id: string;
+          gamerTag: string;
+          prefix?: string;
+          user?: {
+            id: string;
+            name?: string;
+            email?: string;
+            images?: Array<{
+              url: string;
+              type: string;
+            }>;
+          };
+          characters?: Array<{
+            id: string;
+            name: string;
+            images?: Array<{
+              url: string;
+              type: string;
+            }>;
+          }>;
+        };
+      }>(query, { playerId });
+
+      // Map query result to Player interface
+      const player = data.player;
+      return {
+        id: player.id,
+        gamerTag: player.gamerTag,
+        prefix: player.prefix,
+        user: player.user,
+        characters: player.characters,
+      } as Player;
+    } catch (error) {
+      console.error('Error fetching player info:', error);
+      throw error;
+    }
+  }
+  
 }
