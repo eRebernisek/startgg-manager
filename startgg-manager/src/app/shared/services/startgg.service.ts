@@ -45,6 +45,36 @@ export interface Player {
   }>;
 }
 
+export interface ImageRef {
+  url: string;
+  type?: string;
+}
+
+export interface SetParticipant {
+  id: string;
+  player?: {
+    id: string;
+    gamerTag: string;
+    prefix?: string;
+  };
+  user?: {
+    id: string;
+    images?: ImageRef[];
+  };
+  images?: ImageRef[];
+}
+
+export function getParticipantImageUrl(participant?: SetParticipant): string | null {
+  if (!participant) return null;
+  if (participant.user?.images?.length) {
+    return participant.user.images[0].url;
+  }
+  if (participant.images?.length) {
+    return participant.images[0].url;
+  }
+  return null;
+}
+
 export interface Set {
   id: string;
   state: number;
@@ -57,14 +87,7 @@ export interface Set {
     entrant?: {
       id: string;
       name: string;
-      participants?: Array<{
-        id: string;
-        player?: {
-          id: string;
-          gamerTag: string;
-          prefix?: string;
-        };
-      }>;
+      participants?: SetParticipant[];
     };
     standing?: {
       stats?: {
@@ -394,6 +417,17 @@ export class StartggService {
                         gamerTag
                         prefix
                       }
+                      user {
+                        id
+                        images {
+                          url
+                          type
+                        }
+                      }
+                      images {
+                        url
+                        type
+                      }
                     }
                   }
                   standing {
@@ -449,14 +483,7 @@ export class StartggService {
                 entrant?: {
                   id: string;
                   name: string;
-                  participants: Array<{
-                    id: string;
-                    player?: {
-                      id: string;
-                      gamerTag: string;
-                      prefix?: string;
-                    };
-                  }>;
+                  participants: SetParticipant[];
                 };
                 standing?: {
                   stats?: {

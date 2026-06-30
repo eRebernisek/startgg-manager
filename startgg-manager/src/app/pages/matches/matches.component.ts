@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, Inject, numberAttribute } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { StartggService, Tournament, Player, Set as SetType, Game, Videogame, Event as StartGGEvent } from '../../shared/services/startgg.service';
+import { StartggService, Tournament, Set as SetType, Game, Videogame, Event as StartGGEvent, getParticipantImageUrl, SetParticipant } from '../../shared/services/startgg.service';
 
 interface Character {
   id: string;
@@ -34,8 +34,7 @@ export class MatchesComponent implements OnInit {
   expandedSetId: string | null = null;
   savingSetId: string | null = null;
   loadingSetDetails: Set<string> = new Set();
-  playerInfoMap: Map<string, Player> = new Map();
-  playerImageUrlMap: Map<string, string> = new Map(); // Cache for player image URLs
+  playerImageUrlMap: Map<string, string> = new Map();
   
   // Character selection modal state
   showCharacterModal: boolean = false;
@@ -114,14 +113,8 @@ export class MatchesComponent implements OnInit {
         isDirty: false
       }));
       
-      // Load player info for all players in sets and cache image URLs
-      await this.loadPlayerInfo();
-      this.playerInfoMap.forEach((playerInfo, playerId) => {
-        if (playerInfo.user?.images && playerInfo.user.images.length > 0) {
-          // Cache the first image URL for each player
-          this.playerImageUrlMap.set(playerId, playerInfo.user.images[0].url);
-        }
-      });
+      this.cacheImagesFromSets(this.sets);
+      await this.loadMissingPlayerImages();
     } catch (error: any) {
       this.error = error.message || 'Failed to load sets';
       console.error('Error loading sets:', error);
@@ -242,9 +235,18 @@ export class MatchesComponent implements OnInit {
 
   getEntrantName(slot: any): string {
     if (slot.entrant) {
-      return slot.entrant.name;
+      return this.formatEntrantName(slot.entrant.name);
     }
     return 'TBD';
+  }
+
+  private formatEntrantName(name: string): string {
+    const separator = ' | ';
+    const separatorIndex = name.indexOf(separator);
+    if (separatorIndex !== -1) {
+      return name.substring(separatorIndex + separator.length).trim();
+    }
+    return name.trim();
   }
 
   getEntrantPlayers(slot: any): string {
@@ -648,13 +650,8 @@ export class MatchesComponent implements OnInit {
     const playerIds = new Set<string>();
     
     this.sets.forEach(set => {
-
-      console.clear();
-      console.log(set.slots);
-      debugger;
-
       set.slots?.forEach(slot => {
-        slot.entrant?.participants?.forEach((participant: any) => {
+        slot.entrant?.participants?.forEach((participant) => {
           if (participant.player?.id) {
             playerIds.add(participant.player.id);
           }
@@ -665,94 +662,98 @@ export class MatchesComponent implements OnInit {
     return playerIds;
   }
 
-  private async loadPlayerInfo(): Promise<void> {
-    const playerIds = this.extractPlayerIds();
-    const playerIdsArray = Array.from(playerIds);
-    
-    // Load player info for all unique player IDs
-    const loadPromises = playerIdsArray
-      .filter(id => !this.playerInfoMap.has(id)) // Only load if not already cached
-      .map(async (playerId) => {
-        try {
-          const playerInfo = await this.startggService.getPlayerInfo(playerId);
-          this.playerInfoMap.set(playerId, playerInfo);
-        } catch (error) {
-          console.error(`Error loading player info for ${playerId}:`, error);
-          // Continue loading other players even if one fails
-        }
+  private cacheImagesFromSets(sets: SetWithGames[]): void {
+    sets.forEach(set => {
+      set.slots?.forEach(slot => {
+        slot.entrant?.participants?.forEach((participant) => {
+          const playerId = participant.player?.id;
+          if (!playerId || this.playerImageUrlMap.has(playerId)) return;
+
+          const imageUrl = getParticipantImageUrl(participant);
+          if (imageUrl) {
+            this.playerImageUrlMap.set(playerId, imageUrl);
+          }
+        });
       });
-    
+    });
+  }
+
+  private async loadMissingPlayerImages(): Promise<void> {
+    const playerIds = Array.from(this.extractPlayerIds()).filter(
+      id => !this.playerImageUrlMap.has(id)
+    );
+
+    const loadPromises = playerIds.map(async (playerId) => {
+      try {
+        const playerInfo = await this.startggService.getPlayerInfo(playerId);
+        if (playerInfo.user?.images?.length) {
+          this.playerImageUrlMap.set(playerId, playerInfo.user.images[0].url);
+        }
+      } catch (error) {
+        console.error(`Error loading player info for ${playerId}:`, error);
+      }
+    });
+
     await Promise.all(loadPromises);
     this.cdr.markForCheck();
   }
 
-  async getPlayerImageUrl(slot: any): Promise<string | null> {
-    if (!slot.entrant?.participants) return null;
-    
-    // Get the first participant's player ID
-    const firstParticipant = slot.entrant.participants[0];
-    if (!firstParticipant?.player?.id) return null;
-    
-    const playerId = firstParticipant.player.id;
-    
-    // Check if image URL is already cached
-    if (this.playerImageUrlMap.has(playerId)) {
-      return this.playerImageUrlMap.get(playerId)!;
-    }
-    
-    // Check if player info is already loaded
-    if (!this.playerInfoMap.has(playerId)) {
-      // Load player info for this specific player
-      try {
-        const playerInfo = await this.startggService.getPlayerInfo(playerId);
-        this.playerInfoMap.set(playerId, playerInfo);
-      } catch (error) {
-        console.error(`Error loading player info for ${playerId}:`, error);
-        return null;
-      }
-    }
-    
-    const playerInfo = this.playerInfoMap.get(playerId);
-    
-    if (!playerInfo?.user?.images || playerInfo.user.images.length === 0) {
-      return null;
-    }
-    
-    // Cache and return the first image URL
-    const imageUrl = playerInfo.user.images[0].url;
-    this.playerImageUrlMap.set(playerId, imageUrl);
-    this.cdr.markForCheck();
-    
-    console.clear();
-    console.log(imageUrl);
-    debugger;
-
-    return imageUrl;
+  private getFirstParticipant(slot: { entrant?: { participants?: SetParticipant[] } }): SetParticipant | undefined {
+    return slot.entrant?.participants?.[0];
   }
 
-  // Synchronous getter for template usage
-  getPlayerImageUrlSync(slot: any): string | null {
-    if (!slot.entrant?.participants) return null;
-    
-    const firstParticipant = slot.entrant.participants[0];
-    if (!firstParticipant?.player?.id) return null;
-    
-    const playerId = firstParticipant.player.id;
+  async getPlayerImageUrl(slot: { entrant?: { participants?: SetParticipant[] } }): Promise<string | null> {
+    const participant = this.getFirstParticipant(slot);
+    if (!participant?.player?.id) return null;
 
-    console.clear();
-    console.log(this.playerImageUrlMap);
-    debugger;
-    
-    // Return cached image URL if available
+    const playerId = participant.player.id;
+
+    const fromParticipant = getParticipantImageUrl(participant);
+    if (fromParticipant) {
+      this.playerImageUrlMap.set(playerId, fromParticipant);
+      return fromParticipant;
+    }
+
     if (this.playerImageUrlMap.has(playerId)) {
       return this.playerImageUrlMap.get(playerId)!;
     }
-    
-    // Trigger async loading (fire and forget)
+
+    try {
+      const playerInfo = await this.startggService.getPlayerInfo(playerId);
+      if (playerInfo.user?.images?.length) {
+        const imageUrl = playerInfo.user.images[0].url;
+        this.playerImageUrlMap.set(playerId, imageUrl);
+        this.cdr.markForCheck();
+        return imageUrl;
+      }
+    } catch (error) {
+      console.error(`Error loading player info for ${playerId}:`, error);
+    }
+
+    return null;
+  }
+
+  getPlayerImageUrlSync(slot: { entrant?: { participants?: SetParticipant[] } }): string | null {
+    const participant = this.getFirstParticipant(slot);
+    if (!participant?.player?.id) return null;
+
+    const fromParticipant = getParticipantImageUrl(participant);
+    if (fromParticipant) return fromParticipant;
+
+    const playerId = participant.player.id;
+    if (this.playerImageUrlMap.has(playerId)) {
+      return this.playerImageUrlMap.get(playerId)!;
+    }
+
     this.getPlayerImageUrl(slot).catch(error => {
       console.error('Error loading player image:', error);
     });
-    
-    return null; // Return null until loaded
+
+    return null;
+  }
+
+  getPlayerInitial(slot: any): string {
+    const name = this.getEntrantName(slot);
+    return name === 'TBD' ? '?' : name.charAt(0).toUpperCase();
   }
 }

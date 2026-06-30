@@ -61,10 +61,17 @@
           
           <div class="match-teams">
             <div class="team" *ngIf="set.slots && set.slots[0]">
-              <img 
-                src="https://images.start.gg/images/user/642725/image-7515b0f5080d172377aaff65b5b2ea0d.jpg?ehk=Sy44U4Ashnd4eem6krOAjMQBIBfTP1e%2BNFHggZ%2Fg%2B%2FY%3D&ehkOptimized=D2sntIlD5oTqcHJbOCDrg1KJnRWZqPRowbg3qcctLew%3D" 
+              <img
+                *ngIf="getPlayerImageUrlSync(set.slots[0]) as playerImage"
+                [src]="getPlayerImageUrlSync(set.slots[0])"
                 [alt]="getEntrantName(set.slots[0])"
                 class="team-player-image" />
+              <div
+                *ngIf="!getPlayerImageUrlSync(set.slots[0])"
+                class="team-player-image team-player-placeholder"
+                [attr.aria-label]="getEntrantName(set.slots[0])">
+                {{ getPlayerInitial(set.slots[0]) }}
+              </div>
               <div class="team-info">
                 <span class="team-name">
                   {{ getEntrantName(set.slots[0]) }}
@@ -80,10 +87,17 @@
                   {{ getEntrantName(set.slots[1]) }}
                 </span>
               </div>
-              <img 
-                src="https://images.start.gg/images/user/642725/image-7515b0f5080d172377aaff65b5b2ea0d.jpg?ehk=Sy44U4Ashnd4eem6krOAjMQBIBfTP1e%2BNFHggZ%2Fg%2B%2FY%3D&ehkOptimized=D2sntIlD5oTqcHJbOCDrg1KJnRWZqPRowbg3qcctLew%3D" 
+              <img
+                *ngIf="getPlayerImageUrlSync(set.slots[1]) as playerImage"
+                [src]="playerImage"
                 [alt]="getEntrantName(set.slots[1])"
                 class="team-player-image" />
+              <div
+                *ngIf="!getPlayerImageUrlSync(set.slots[1])"
+                class="team-player-image team-player-placeholder"
+                [attr.aria-label]="getEntrantName(set.slots[1])">
+                {{ getPlayerInitial(set.slots[1]) }}
+              </div>
             </div>
           </div>
           
